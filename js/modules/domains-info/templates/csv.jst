@@ -1,0 +1,18 @@
+<div class='smaller'>
+  <div class='row form add-margin-bottom-30'>
+    <div class='columns xlarge-2'>
+      <label for='domains-info-attributes'>Attributes</label>
+    </div>
+    <div class='columns xlarge-8'>
+      <select class='select2' id='domains-info-attributes' multiple>
+        <% _.each(attrs, function(attribute) { %>
+          <option value='<%= attribute %>' selected='selected'><%= attribute %></option>
+        <% }); %>
+      </select>
+      <a class='btn btn-small-uppercase btn-green' id='domains-info-export'>Export</a>
+      <a class='alt-action alt-action-small' id='domains-info-start-over' href>Start Over</a>
+    </div>
+    <div class='columns xlarge-2'></div>
+  </div>
+</div>
+<div class='row add-margin-bottom-30'><hr></div>

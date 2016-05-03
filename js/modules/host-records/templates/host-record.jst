@@ -1,0 +1,15 @@
+<td><%= domain %></td>
+<td><%= host %></td>
+<td><%= type %></td>
+<td><%= value %></td>
+<% if (status === 'New') { %>
+  <td><p class='badge'>New</p></td>
+<% } else if (status === 'Pending') { %>
+  <td><p class='badge grace'>Pending</p></td>
+<% } else if (status === 'Enqueued') { %>
+  <td><p class='badge warning'>Enqueued</p></td>
+<% } else if (status === 'Done') { %>
+  <td><p class='badge ok'>Done</p></td>
+<% } else if (status === 'Error') { %>
+  <td><p class='badge danger'>Error</p> <p class='message'><%= error %></p></td>
+<% } %>

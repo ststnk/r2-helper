@@ -1,0 +1,49 @@
+.r2-d2 textarea {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100px;
+  margin-bottom: 1em;
+}
+
+.r2-d2 .btn,
+.r2-d2 .simple-btn {
+  cursor: pointer !important;
+  margin-bottom: 0 !important;
+}
+
+.r2-d2 #fetch-domains-info {
+  margin-bottom: 2em !important;
+}
+
+.r2-d2 .btn[disabled='disabled'] {
+  cursor: not-allowed;
+}
+
+.r2-d2 p.message {
+  display: inline;
+}
+
+.r2-d2 .alt-action-small {
+  font-size: 0.85rem;
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+.r2-d2 .alt-action-small.no-margin {
+  margin-left: 0;
+}
+
+.r2-d2 .select2-container.select2-container-multi.select2 {
+  margin-bottom: 1rem;
+}
+
+/*
+alert   - yellow
+ok      - greenish
+grace   - purple
+warning - light-purple
+dark    - gray
+black   - black
+info    - blue
+danger  - red
+*/

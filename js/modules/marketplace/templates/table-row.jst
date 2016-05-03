@@ -1,0 +1,10 @@
+<td><%= name %></td>
+<% if (status === 'New') { %>
+  <td><p class='badge'>New</p></td>
+<% } else if (status === 'Enqueued') { %>
+  <td><p class='badge warning'>Enqueued</p></td>
+<% } else if (status === 'Done') { %>
+  <td><p class='badge ok'>Done</p> <p class='message'><%= message %></p></td>
+<% } else if (status === 'Error') { %>
+  <td><p class='badge danger'>Error</p> <p class='message'><%= message %></p></td>
+<% } %>
