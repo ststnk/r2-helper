@@ -4,8 +4,8 @@
   "description": "Chrome Extension",
   "main": "js/index.js",
   "scripts": {
-    "build": "browserify js/main.coffee --extension=.coffee --extension=.jst -o build/contentscript.js",
-    "watch": "watchify js/main.coffee --extension=.coffee --extension=.jst -o build/contentscript.js"
+    "build": "browserify js/main.coffee --extension=.coffee --extension=.jst -o r2-helper/contentscript.js",
+    "watch": "watchify js/main.coffee --extension=.coffee --extension=.jst -o r2-helper/contentscript.js"
   },
   "author": "Stanislav Tanko",
   "license": "ISC",

@@ -12,5 +12,5 @@ gulp.task('dependencies', function() {
   ])
   .pipe(uglify())
   .pipe(concat('dependencies.min.js'))
-  .pipe(gulp.dest('build'))
+  .pipe(gulp.dest('r2-helper'))
 });
