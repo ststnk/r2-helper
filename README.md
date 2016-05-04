@@ -2,7 +2,7 @@
 
 ##### Add Host Records
 
-Allows setting up host records in bulk. Always created new host records, existing records are left intact. Currently supported record types are A, CNAME, TXT, REDIRECT, FRAME, AAAA, NS and 301.
+Allows setting up host records in bulk. Always creates new host records, existing records are left intact. Currently supported record types are A, CNAME, TXT, REDIRECT, FRAME, AAAA, NS and 301.
 
 Host records must be provided in specific format: `host domainName recordType value`. Example:
 ```
