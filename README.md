@@ -1,3 +1,7 @@
+R2-D2 Helper is a Chrome extension that extends namecheap.com interface with additional bulk features.
+
+---
+
 ### Features
 
 ##### Add Host Records
