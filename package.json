@@ -2,7 +2,6 @@
   "name": "r2-helper",
   "version": "1.0.0",
   "description": "Chrome Extension",
-  "main": "js/index.js",
   "scripts": {
     "build": "browserify js/main.coffee --extension=.coffee --extension=.jst -o r2-helper/contentscript.js",
     "watch": "watchify js/main.coffee --extension=.coffee --extension=.jst -o r2-helper/contentscript.js"
