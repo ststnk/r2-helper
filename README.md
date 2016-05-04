@@ -4,14 +4,25 @@
 
 Allows setting up host records in bulk. Always created new host records, existing records are left intact. Currently supported record types are A, CNAME, TXT, REDIRECT, FRAME, AAAA, NS and 301.
 
-Host records must be provided in specific format: `host domain recordType value`. Example:
-
-`@ example.com A 12.23.34.45
-www another.net CNAME example.com`
+Host records must be provided in specific format: `host domainName recordType value`. Example:
+```
+@ example.com A 12.23.34.45
+www another.net CNAME example.com
+```
 
 ##### Domains Info
 
-Allows exporting details about all domains in the account in CSV format. Available attributes are: registrant contacts, administrator contacts, technical contacts, billing contacts, WhoisGuard status, nameservers type, expiration date, autorenew status.
+Allows exporting details about all domains in the account in CSV format. Available attributes are:
+
+* registrant contacts
+* administrator contacts
+* technical contacts
+* billing contacts
+* WhoisGuard status
+* nameservers type
+* custom nameservers
+* expiration date
+* autorenew status
 
 ##### Marketplace
 
