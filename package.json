@@ -1,10 +1,11 @@
 {
   "name": "r2-helper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chrome Extension",
   "scripts": {
-    "build": "browserify js/main.coffee --extension=.coffee --extension=.jst -o r2-helper/contentscript.js",
-    "watch": "watchify js/main.coffee --extension=.coffee --extension=.jst -o r2-helper/contentscript.js"
+    "build": "browserify js/main.coffee --extension=.coffee --extension=.jst -o build/contentscript.js",
+    "watch": "watchify js/main.coffee --extension=.coffee --extension=.jst -o build/contentscript.js",
+    "zip": "mkdir r2-helper && cp build/* r2-helper/ && zip r2-helper.zip r2-helper/* -x \"*.DS_Store\" && rm -rf r2-helper"
   },
   "author": "Stanislav Tanko",
   "license": "ISC",

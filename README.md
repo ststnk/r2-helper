@@ -46,5 +46,8 @@ Allows listing domains for sale in bulk. All provided domain names will be liste
 
 ### Changelog
 
+##### v1.0.1
+* Fixed: TXT records containing spaces were parsed incorrectly
+
 ##### v1.0.0
 Initial release

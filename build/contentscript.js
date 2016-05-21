@@ -884,16 +884,30 @@ RecordsParser = (function(superClass) {
   };
 
   RecordsParser.prototype.domains = function() {
-    return _.map(this.lines, function(line) {
-      var values;
-      values = _.compact(line.split(/\s/));
-      return {
-        host: values[0],
-        domain: values[1],
-        type: values[2],
-        value: values[3]
+    return _.map(this.lines, (function(_this) {
+      return function(line) {
+        var values;
+        values = _.compact(_this._split(line, 4));
+        return {
+          host: values[0],
+          domain: values[1],
+          type: values[2],
+          value: values[3]
+        };
       };
-    });
+    })(this));
+  };
+
+  RecordsParser.prototype._split = function(str, count) {
+    var index, result;
+    result = [];
+    while (result.length < count - 1) {
+      index = str.search(/\s/);
+      result.push(str.slice(0, index));
+      str = str.slice(index).trim();
+    }
+    result.push(str);
+    return result;
   };
 
   return RecordsParser;
