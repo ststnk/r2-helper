@@ -21,6 +21,7 @@ class DomainName extends Backbone.Model
         @setContacts          data, 'TechContactDetails',        'Technical Contacts'
         @setContacts          data, 'BillingContactDetails',     'Billing Contacts'
         @setWhoisGuardStatus  data.WGDetails?.WGActiveStatus
+        @setWGForwardedEmail  data.WGDetails
         @setNameserversType   data.NameServerDetails
         @setExpirationDate    data.ExpiryDateTime
         @setAutoRenew         data.AutoRenew
@@ -81,6 +82,9 @@ class DomainName extends Backbone.Model
   setAutoRenew: (data) ->
     status = if data then 'Yes' else 'No'
     @set 'AutoRenew Enabled', status
+
+  setWGForwardedEmail: (data) ->
+    @set('WG Forwarded Email', data.WGAssociatedEmailForwardedTo) if data.WGAssociatedEmailForwardedTo
 
 
 class DomainNamesCollection extends Backbone.Collection

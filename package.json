@@ -1,6 +1,6 @@
 {
   "name": "r2-helper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Chrome Extension",
   "scripts": {
     "build": "browserify js/main.coffee --extension=.coffee --extension=.jst -o build/contentscript.js",

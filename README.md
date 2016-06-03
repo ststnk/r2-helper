@@ -46,6 +46,9 @@ Allows listing domains for sale in bulk. All provided domain names will be liste
 
 ### Changelog
 
+##### v1.0.2
+* Added: Export WhoisGuard forwarded email if present
+
 ##### v1.0.1
 * Fixed: TXT records containing spaces were parsed incorrectly
 

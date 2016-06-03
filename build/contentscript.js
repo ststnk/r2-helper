@@ -213,6 +213,7 @@ DomainName = (function(superClass) {
           _this.setContacts(data, 'TechContactDetails', 'Technical Contacts');
           _this.setContacts(data, 'BillingContactDetails', 'Billing Contacts');
           _this.setWhoisGuardStatus((ref = data.WGDetails) != null ? ref.WGActiveStatus : void 0);
+          _this.setWGForwardedEmail(data.WGDetails);
           _this.setNameserversType(data.NameServerDetails);
           _this.setExpirationDate(data.ExpiryDateTime);
           _this.setAutoRenew(data.AutoRenew);
@@ -299,6 +300,12 @@ DomainName = (function(superClass) {
     var status;
     status = data ? 'Yes' : 'No';
     return this.set('AutoRenew Enabled', status);
+  };
+
+  DomainName.prototype.setWGForwardedEmail = function(data) {
+    if (data.WGAssociatedEmailForwardedTo) {
+      return this.set('WG Forwarded Email', data.WGAssociatedEmailForwardedTo);
+    }
   };
 
   return DomainName;
