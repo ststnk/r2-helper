@@ -1,4 +1,4 @@
-R2-D2 Helper is a Chrome extension that extends namecheap.com interface with additional bulk features.
+R2-D2 Helper is a Google Chrome extension that extends namecheap.com interface with additional bulk features.
 
 ---
 
@@ -32,6 +32,10 @@ Allows exporting details about all domains in the account in CSV format. Availab
 
 Allows listing domains for sale in bulk. All provided domain names will be listed for sale with the same attributes provided/selected in the form.
 
+##### Auto Renew
+
+Allows managing auto-renew for domains and WhoisGuard subscriptions in bulk.
+
 ---
 
 ### Installation
@@ -40,11 +44,14 @@ Allows listing domains for sale in bulk. All provided domain names will be liste
 * Go to `chrome://extensions` in Google Chrome
 * Enable developer mode (checkbox on top)
 * Click 'Load unpacked extension...'
-* Choose the diectory with unpacked content
+* Choose the directory with unpacked content
 
 ---
 
 ### Changelog
+
+##### v1.1.0
+* Added: Auto-Renew feature
 
 ##### v1.0.2
 * Added: Export WhoisGuard forwarded email if present

@@ -4,19 +4,27 @@ class DomainName extends Backbone.Model
     status:    'New'
     _complete: false
 
-  list: ->
+  getDomainStatus: ->
+    if @get('enable') is 'true'
+      true
+    else
+      @get('disableOnlyWG') is 'true'
+
+  getWGStatus: ->
+    if @get('enable') is 'true'
+      @get('enableOnlyDomains') is 'false'
+    else
+      false
+
+  update: ->
     $.ajax
-      type: 'POST'
-      url:  'https://ap.www.namecheap.com/domains/AddDomainToMarketplaceListing'
+      type: 'GET'
+      url:  'https://ap.www.namecheap.com/Domains/ChangeDomainAndWGAutoRenew'
       data:
-        model:
-          DomainName:             @get('name')
-          Description:            @get('description')
-          AskingPrice:            @get('price')
-          Period:                 @get('period')
-          IsAdultListing:         @get('adult')
-          SaleEmailNotification:  @get('sendEmails')
-          SelectedCategory:       @get('categories')
+        autoRenewFor:      'DOMAIN'
+        domainName:        @get('name')
+        isDomainAutoRenew: @getDomainStatus()
+        isWGAutoRenew:     @getWGStatus()
       beforeSend: (xhr) ->
         xhr.setRequestHeader '_NcCompliance', $('input[name="ncCompliance"]').val()
 
@@ -33,12 +41,12 @@ class DomainNamesCollection extends Backbone.Collection
   initialize: ->
     @listenTo @, 'change', ->
       complete = @every (model) -> model.get '_complete'
-      @trigger('listed') if complete
+      @trigger('changed') if complete
 
-  listForSale: ->
+  updateAutoRenew: ->
     @each (model) ->
       model.set 'status', 'Enqueued'
-      model.list()
+      model.update()
 
 
 module.exports.DomainName            = DomainName

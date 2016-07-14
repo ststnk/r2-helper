@@ -1,0 +1,66 @@
+<div class='smaller'>
+  <div class='row add-margin-bottom-30 form'>
+    <div class='row'>
+      <div class='columns'>
+        <div class='columns xlarge-2'>
+          <label for='auto-renew-domains'>Domain Names</label>
+        </div>
+        <div class='columns xlarge-8'>
+          <textarea id='auto-renew-domains'></textarea>
+        </div>
+        <div class='columns xlarge-2'></div>
+      </div>
+    </div>
+    <div class='row'>
+      <div class='columns'>
+        <div class='columns xlarge-2'>
+          <label for='auto-renew-enable'>Enable / Disable</label>
+        </div>
+        <div class='columns xlarge-8'>
+          <select class='select2' id='auto-renew-enable'>
+            <option value='true'>Enable</option>
+            <option value='false'>Disable</option>
+          </select>
+        </div>
+        <div class='columns xlarge-2'></div>
+      </div>
+    </div>
+    <div class='row' id='auto-renew-enable-only-domains-div'>
+      <div class='columns'>
+        <div class='columns xlarge-2'>
+          <label for='auto-renew-enable-only-domains'>Domains / WG</label>
+        </div>
+        <div class='columns xlarge-8'>
+          <select class='select2' id='auto-renew-enable-only-domains'>
+            <option value='true'>Only domains</option>
+            <option value='false'>Both domains and WG</option>
+          </select>
+        </div>
+        <div class='columns xlarge-2'></div>
+      </div>
+    </div>
+    <div class='row' id='auto-renew-disable-only-wg-div'>
+      <div class='columns'>
+        <div class='columns xlarge-2'>
+          <label for='auto-renew-disable-only-wg'>Domains / WG</label>
+        </div>
+        <div class='columns xlarge-8'>
+          <select class='select2' id='auto-renew-disable-only-wg'>
+            <option value='true'>Only WG</option>
+            <option value='false'>Both WG and domains</option>
+          </select>
+        </div>
+        <div class='columns xlarge-2'></div>
+      </div>
+    </div>
+    <div class='row'>
+      <div class='columns'>
+        <div class='columns xlarge-2'></div>
+        <div class='columns xlarge-10'>
+          <a class='btn btn-small-uppercase btn-green' id='update-auto-renew'>Update</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class='row add-margin-bottom-30'><hr></div>

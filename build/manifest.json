@@ -2,11 +2,11 @@
   "manifest_version": 2,
 
   "name":    "R2-D2 Helper",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "icons":   {
     "128": "artoo.png"
   },
-  
+
   "content_scripts": [
     {
       "matches":  ["https://ap.www.namecheap.com/*"],
@@ -14,7 +14,7 @@
       "css":      ["styles.css"]
     }
   ],
-  
+
   "permissions": [
     "declarativeContent"
   ]

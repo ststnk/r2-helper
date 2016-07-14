@@ -6,7 +6,8 @@ App = new Marionette.Application;
 App.addRegions({
   hostRecordsRegion: '#host-records-region',
   domainsInfoRegion: '#domains-info-region',
-  marketplaceRegion: '#marketplace-region'
+  marketplaceRegion: '#marketplace-region',
+  autoRenewRegion: '#auto-renew-region'
 });
 
 App.on('start', function() {
@@ -17,7 +18,7 @@ module.exports = App;
 
 
 },{}],2:[function(require,module,exports){
-var App, DomainsInfo, HostRecords, Marketplace, template;
+var App, AutoRenew, DomainsInfo, HostRecords, Marketplace, template;
 
 App = require('./app');
 
@@ -27,9 +28,11 @@ DomainsInfo = require('./modules/domains-info');
 
 Marketplace = require('./modules/marketplace');
 
+AutoRenew = require('./modules/auto-renew');
+
 $('#apnav ul:first-child').append("<li class='r2-d2'><a href=''><span>R2-D2 Helper</span></a></li>");
 
-template = "<div class='row normal-vertical-spacing'> <div class='columns'><h1 class='section-title'>R2-D2 Helper</h1></div> </div> <div class='row add-margin-bottom-30'><hr></div> <div id='host-records-region'></div> <div id='domains-info-region'></div> <div id='marketplace-region'></div>";
+template = "<div class='row normal-vertical-spacing'> <div class='columns'><h1 class='section-title'>R2-D2 Helper</h1></div> </div> <div class='row add-margin-bottom-30'><hr></div> <div id='host-records-region'></div> <div id='domains-info-region'></div> <div id='marketplace-region'></div> <div id='auto-renew-region'></div>";
 
 $('#apnav ul .r2-d2').click(function() {
   if (!App.isStarted) {
@@ -39,12 +42,392 @@ $('#apnav ul .r2-d2').click(function() {
     App.module('HostRecords', HostRecords);
     App.module('DomainsInfo', DomainsInfo);
     App.module('Marketplace', Marketplace);
+    App.module('AutoRenew', AutoRenew);
     return App.start();
   }
 });
 
 
-},{"./app":1,"./modules/domains-info":3,"./modules/host-records":12,"./modules/marketplace":21}],3:[function(require,module,exports){
+},{"./app":1,"./modules/auto-renew":3,"./modules/domains-info":11,"./modules/host-records":20,"./modules/marketplace":29}],3:[function(require,module,exports){
+var App, AutoRenewModule, Controller,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+Controller = require('./auto-renew/controller');
+
+App = require('../app');
+
+AutoRenewModule = (function(superClass) {
+  extend(AutoRenewModule, superClass);
+
+  function AutoRenewModule() {
+    return AutoRenewModule.__super__.constructor.apply(this, arguments);
+  }
+
+  AutoRenewModule.prototype.startWithParent = true;
+
+  AutoRenewModule.prototype.initialize = function() {
+    return new Controller({
+      region: App.autoRenewRegion
+    });
+  };
+
+  return AutoRenewModule;
+
+})(Marionette.Module);
+
+module.exports = AutoRenewModule;
+
+
+},{"../app":1,"./auto-renew/controller":4}],4:[function(require,module,exports){
+var Controller, Entities, Views,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+Views = require('./views');
+
+Entities = require('./entities');
+
+Controller = (function(superClass) {
+  extend(Controller, superClass);
+
+  function Controller() {
+    return Controller.__super__.constructor.apply(this, arguments);
+  }
+
+  Controller.prototype.initialize = function(options) {
+    this.region = options.region;
+    this.layout = this.getLayoutView();
+    this.listenTo(this.layout, 'show', function() {
+      return this.contentRegion();
+    });
+    return this.region.show(this.layout);
+  };
+
+  Controller.prototype.contentRegion = function() {
+    var inputView;
+    inputView = this.getInputView();
+    this.listenTo(inputView, 'update:auto:renew:clicked', function() {
+      var domains, tableView;
+      domains = this.getDomains(inputView.data());
+      if (domains.length > 0) {
+        tableView = this.getTableView(domains);
+        this.listenTo(tableView, 'start:over:clicked', (function(_this) {
+          return function() {
+            return _this.contentRegion();
+          };
+        })(this));
+        this.layout.contentRegion.show(tableView);
+        return domains.updateAutoRenew();
+      }
+    });
+    return this.layout.contentRegion.show(inputView);
+  };
+
+  Controller.prototype.getTableView = function(domains) {
+    return new Views.Table({
+      collection: domains
+    });
+  };
+
+  Controller.prototype.getDomains = function(data) {
+    var domains;
+    if (data.domains.trim().length === 0) {
+      return [];
+    }
+    domains = _.map(data.domains.split("\n"), function(domain) {
+      return _.chain(data).omit('domains').extend({
+        name: domain.trim().toLowerCase()
+      }).value();
+    });
+    return new Entities.DomainNamesCollection(domains);
+  };
+
+  Controller.prototype.getInputView = function() {
+    return new Views.Input;
+  };
+
+  Controller.prototype.getLayoutView = function() {
+    return new Views.Layout;
+  };
+
+  return Controller;
+
+})(Marionette.Object);
+
+module.exports = Controller;
+
+
+},{"./entities":5,"./views":10}],5:[function(require,module,exports){
+var DomainName, DomainNamesCollection,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+DomainName = (function(superClass) {
+  extend(DomainName, superClass);
+
+  function DomainName() {
+    return DomainName.__super__.constructor.apply(this, arguments);
+  }
+
+  DomainName.prototype.defaults = {
+    status: 'New',
+    _complete: false
+  };
+
+  DomainName.prototype.getDomainStatus = function() {
+    if (this.get('enable') === 'true') {
+      return true;
+    } else {
+      return this.get('disableOnlyWG') === 'true';
+    }
+  };
+
+  DomainName.prototype.getWGStatus = function() {
+    if (this.get('enable') === 'true') {
+      return this.get('enableOnlyDomains') === 'false';
+    } else {
+      return false;
+    }
+  };
+
+  DomainName.prototype.update = function() {
+    return $.ajax({
+      type: 'GET',
+      url: 'https://ap.www.namecheap.com/Domains/ChangeDomainAndWGAutoRenew',
+      data: {
+        autoRenewFor: 'DOMAIN',
+        domainName: this.get('name'),
+        isDomainAutoRenew: this.getDomainStatus(),
+        isWGAutoRenew: this.getWGStatus()
+      },
+      beforeSend: function(xhr) {
+        return xhr.setRequestHeader('_NcCompliance', $('input[name="ncCompliance"]').val());
+      }
+    }).done((function(_this) {
+      return function(data) {
+        _this.set('message', data['Msg']);
+        if (data['Error']) {
+          _this.set('status', 'Error');
+        } else {
+          _this.set('status', 'Done');
+        }
+        return _this.set('_complete', true);
+      };
+    })(this));
+  };
+
+  return DomainName;
+
+})(Backbone.Model);
+
+DomainNamesCollection = (function(superClass) {
+  extend(DomainNamesCollection, superClass);
+
+  function DomainNamesCollection() {
+    return DomainNamesCollection.__super__.constructor.apply(this, arguments);
+  }
+
+  DomainNamesCollection.prototype.model = DomainName;
+
+  DomainNamesCollection.prototype.initialize = function() {
+    return this.listenTo(this, 'change', function() {
+      var complete;
+      complete = this.every(function(model) {
+        return model.get('_complete');
+      });
+      if (complete) {
+        return this.trigger('changed');
+      }
+    });
+  };
+
+  DomainNamesCollection.prototype.updateAutoRenew = function() {
+    return this.each(function(model) {
+      model.set('status', 'Enqueued');
+      return model.update();
+    });
+  };
+
+  return DomainNamesCollection;
+
+})(Backbone.Collection);
+
+module.exports.DomainName = DomainName;
+
+module.exports.DomainNamesCollection = DomainNamesCollection;
+
+
+},{}],6:[function(require,module,exports){
+module.exports = function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="smaller"> <div class="row add-margin-bottom-30 form"> <div class="row"> <div class="columns"> <div class="columns xlarge-2"> <label for="auto-renew-domains">Domain Names</label> </div> <div class="columns xlarge-8"> <textarea id="auto-renew-domains"></textarea> </div> <div class="columns xlarge-2"></div> </div> </div> <div class="row"> <div class="columns"> <div class="columns xlarge-2"> <label for="auto-renew-enable">Enable / Disable</label> </div> <div class="columns xlarge-8"> <select class="select2" id="auto-renew-enable"> <option value="true">Enable</option> <option value="false">Disable</option> </select> </div> <div class="columns xlarge-2"></div> </div> </div> <div class="row" id="auto-renew-enable-only-domains-div"> <div class="columns"> <div class="columns xlarge-2"> <label for="auto-renew-enable-only-domains">Domains / WG</label> </div> <div class="columns xlarge-8"> <select class="select2" id="auto-renew-enable-only-domains"> <option value="true">Only domains</option> <option value="false">Both domains and WG</option> </select> </div> <div class="columns xlarge-2"></div> </div> </div> <div class="row" id="auto-renew-disable-only-wg-div"> <div class="columns"> <div class="columns xlarge-2"> <label for="auto-renew-disable-only-wg">Domains / WG</label> </div> <div class="columns xlarge-8"> <select class="select2" id="auto-renew-disable-only-wg"> <option value="true">Only WG</option> <option value="false">Both WG and domains</option> </select> </div> <div class="columns xlarge-2"></div> </div> </div> <div class="row"> <div class="columns"> <div class="columns xlarge-2"></div> <div class="columns xlarge-10"> <a class="btn btn-small-uppercase btn-green" id="update-auto-renew">Update</a> </div> </div> </div> </div> </div> <div class="row add-margin-bottom-30"><hr></div>';
+}
+return __p;
+};
+
+},{}],7:[function(require,module,exports){
+module.exports = function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="smaller"> <div class="row"> <div class="columns xlarge-2"> <span class="h-ribbon grey">Auto Renew</span> </div> <div class="columns xlarge-10"> <p>Allows managing auto-renew for domains and WhoisGuard subscriptions in bulk.</p> </div> </div> </div> <div id="auto-renew-content-region"></div>';
+}
+return __p;
+};
+
+},{}],8:[function(require,module,exports){
+module.exports = function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<td>'+
+((__t=( name ))==null?'':__t)+
+'</td> ';
+ if (status === 'New') { 
+__p+=' <td><p class="badge">New</p></td> ';
+ } else if (status === 'Enqueued') { 
+__p+=' <td><p class="badge warning">Enqueued</p></td> ';
+ } else if (status === 'Done') { 
+__p+=' <td><p class="badge ok">Done</p> <p class="message">'+
+((__t=( message ))==null?'':__t)+
+'</p></td> ';
+ } else if (status === 'Error') { 
+__p+=' <td><p class="badge danger">Error</p> <p class="message">'+
+((__t=( message ))==null?'':__t)+
+'</p></td> ';
+ } 
+__p+='';
+}
+return __p;
+};
+
+},{}],9:[function(require,module,exports){
+module.exports = function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="smaller form"> <div class="row"> <div class="columns"> <div class="table-display"> <table> <thead> <tr> <th>Domain</th> <th>Status</th> </tr> </thead> <tbody></tbody> </table> <hr> </div> </div> </div> <div class="row"> <div class="columns disabled-content"> <a class="alt-action alt-action-small no-margin" id="auto-renew-start-over" href>Start Over</a> </div> </div> </div>';
+}
+return __p;
+};
+
+},{}],10:[function(require,module,exports){
+var Input, Layout, Table, TableRow,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+Layout = (function(superClass) {
+  extend(Layout, superClass);
+
+  function Layout() {
+    return Layout.__super__.constructor.apply(this, arguments);
+  }
+
+  Layout.prototype.template = require('./templates/layout');
+
+  Layout.prototype.regions = {
+    contentRegion: '#auto-renew-content-region'
+  };
+
+  return Layout;
+
+})(Marionette.LayoutView);
+
+Input = (function(superClass) {
+  extend(Input, superClass);
+
+  function Input() {
+    return Input.__super__.constructor.apply(this, arguments);
+  }
+
+  Input.prototype.template = require('./templates/input');
+
+  Input.prototype.triggers = {
+    'click #update-auto-renew': 'update:auto:renew:clicked'
+  };
+
+  Input.prototype.onAttach = function() {
+    var script;
+    script = document.createElement('script');
+    script.textContent = "$('select.select2').select2({ minimumResultsForSearch: -1 }); $('#auto-renew-enable').change(function(event) { if ($(event.target).val() === 'true') { $('#auto-renew-enable-only-domains-div').show(200); $('#auto-renew-disable-only-wg-div').hide(200); } else { $('#auto-renew-enable-only-domains-div').hide(200); $('#auto-renew-disable-only-wg-div').show(200); } }); $('#auto-renew-enable').change();";
+    document.head.appendChild(script);
+    return script.parentNode.removeChild(script);
+  };
+
+  Input.prototype.data = function() {
+    return {
+      domains: $('#auto-renew-domains').val(),
+      enable: $('#auto-renew-enable').val(),
+      enableOnlyDomains: $('#auto-renew-enable-only-domains').val(),
+      disableOnlyWG: $('#auto-renew-disable-only-wg').val()
+    };
+  };
+
+  return Input;
+
+})(Marionette.ItemView);
+
+TableRow = (function(superClass) {
+  extend(TableRow, superClass);
+
+  function TableRow() {
+    return TableRow.__super__.constructor.apply(this, arguments);
+  }
+
+  TableRow.prototype.template = require('./templates/table-row');
+
+  TableRow.prototype.tagName = 'tr';
+
+  TableRow.prototype.modelEvents = {
+    'change': 'render'
+  };
+
+  return TableRow;
+
+})(Marionette.ItemView);
+
+Table = (function(superClass) {
+  extend(Table, superClass);
+
+  function Table() {
+    return Table.__super__.constructor.apply(this, arguments);
+  }
+
+  Table.prototype.template = require('./templates/table');
+
+  Table.prototype.childView = TableRow;
+
+  Table.prototype.childViewContainer = 'tbody';
+
+  Table.prototype.ui = {
+    button: '#auto-renew-start-over'
+  };
+
+  Table.prototype.triggers = {
+    'click @ui.button': 'start:over:clicked'
+  };
+
+  Table.prototype.collectionEvents = {
+    'changed': 'enableButton'
+  };
+
+  Table.prototype.enableButton = function() {
+    return this.ui.button.closest('div').removeClass('disabled-content');
+  };
+
+  return Table;
+
+})(Marionette.CompositeView);
+
+module.exports.Layout = Layout;
+
+module.exports.Input = Input;
+
+module.exports.TableRow = TableRow;
+
+module.exports.Table = Table;
+
+
+},{"./templates/input":6,"./templates/layout":7,"./templates/table":9,"./templates/table-row":8}],11:[function(require,module,exports){
 var App, Controller, DomainsInfoModule,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -75,7 +458,7 @@ DomainsInfoModule = (function(superClass) {
 module.exports = DomainsInfoModule;
 
 
-},{"../app":1,"./domains-info/controller":4}],4:[function(require,module,exports){
+},{"../app":1,"./domains-info/controller":12}],12:[function(require,module,exports){
 var Controller, Entities, Objects, Views,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -180,7 +563,7 @@ Controller = (function(superClass) {
 module.exports = Controller;
 
 
-},{"./entities":5,"./objects":6,"./views":11}],5:[function(require,module,exports){
+},{"./entities":13,"./objects":14,"./views":19}],13:[function(require,module,exports){
 var DomainName, DomainNamesCollection,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -412,7 +795,7 @@ module.exports.DomainName = DomainName;
 module.exports.DomainNamesCollection = DomainNamesCollection;
 
 
-},{}],6:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var DomainsFetcher,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -480,7 +863,7 @@ DomainsFetcher = (function(superClass) {
 module.exports.DomainsFetcher = DomainsFetcher;
 
 
-},{}],7:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -497,7 +880,7 @@ __p+=' </select> <a class="btn btn-small-uppercase btn-green" id="domains-info-e
 return __p;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -506,7 +889,7 @@ __p+='<div class="smaller"> <div class="row"> <div class="columns xlarge-2"></di
 return __p;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -515,7 +898,7 @@ __p+='<div class="smaller"> <div class="row"> <div class="columns xlarge-2"> <sp
 return __p;
 };
 
-},{}],10:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -528,7 +911,7 @@ __p+='<div class="smaller"> <div class="row"> <div class="columns xlarge-2"></di
 return __p;
 };
 
-},{}],11:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var Csv, Export, Layout, PullProgress,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -652,7 +1035,7 @@ module.exports.PullProgress = PullProgress;
 module.exports.Csv = Csv;
 
 
-},{"./templates/csv":7,"./templates/export":8,"./templates/layout":9,"./templates/pull-progress":10}],12:[function(require,module,exports){
+},{"./templates/csv":15,"./templates/export":16,"./templates/layout":17,"./templates/pull-progress":18}],20:[function(require,module,exports){
 var App, Controller, HostRecordsModule,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -683,7 +1066,7 @@ HostRecordsModule = (function(superClass) {
 module.exports = HostRecordsModule;
 
 
-},{"../app":1,"./host-records/controller":13}],13:[function(require,module,exports){
+},{"../app":1,"./host-records/controller":21}],21:[function(require,module,exports){
 var Controller, Entities, Objects, Views,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -761,7 +1144,7 @@ Controller = (function(superClass) {
 module.exports = Controller;
 
 
-},{"./entities":14,"./objects":15,"./views":20}],14:[function(require,module,exports){
+},{"./entities":22,"./objects":23,"./views":28}],22:[function(require,module,exports){
 var HostRecord, HostRecordsCollection,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -874,7 +1257,7 @@ module.exports.HostRecord = HostRecord;
 module.exports.HostRecordsCollection = HostRecordsCollection;
 
 
-},{}],15:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var RecordsParser,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -924,7 +1307,7 @@ RecordsParser = (function(superClass) {
 module.exports.RecordsParser = RecordsParser;
 
 
-},{}],16:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -955,7 +1338,7 @@ __p+='';
 return __p;
 };
 
-},{}],17:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -964,7 +1347,7 @@ __p+='<div class="smaller form"> <div class="row"> <div class="columns"> <div cl
 return __p;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -973,7 +1356,7 @@ __p+='<div class="smaller"> <div class="row add-margin-bottom-30 form"> <div cla
 return __p;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -982,7 +1365,7 @@ __p+='<div class="smaller"> <div class="row"> <div class="columns xlarge-2"> <sp
 return __p;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var HostRecord, HostRecords, Input, Layout,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -1091,7 +1474,7 @@ module.exports.HostRecord = HostRecord;
 module.exports.HostRecords = HostRecords;
 
 
-},{"./templates/host-record":16,"./templates/host-records":17,"./templates/input":18,"./templates/layout":19}],21:[function(require,module,exports){
+},{"./templates/host-record":24,"./templates/host-records":25,"./templates/input":26,"./templates/layout":27}],29:[function(require,module,exports){
 var App, Controller, MarketplaceModule,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -1122,7 +1505,7 @@ MarketplaceModule = (function(superClass) {
 module.exports = MarketplaceModule;
 
 
-},{"../app":1,"./marketplace/controller":22}],22:[function(require,module,exports){
+},{"../app":1,"./marketplace/controller":30}],30:[function(require,module,exports){
 var Controller, Entities, Views,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -1203,7 +1586,7 @@ Controller = (function(superClass) {
 module.exports = Controller;
 
 
-},{"./entities":23,"./views":28}],23:[function(require,module,exports){
+},{"./entities":31,"./views":36}],31:[function(require,module,exports){
 var DomainName, DomainNamesCollection,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -1292,7 +1675,7 @@ module.exports.DomainName = DomainName;
 module.exports.DomainNamesCollection = DomainNamesCollection;
 
 
-},{}],24:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -1301,7 +1684,7 @@ __p+='<div class="smaller"> <div class="row add-margin-bottom-30 form"> <div cla
 return __p;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -1310,32 +1693,9 @@ __p+='<div class="smaller"> <div class="row"> <div class="columns xlarge-2"> <sp
 return __p;
 };
 
-},{}],26:[function(require,module,exports){
-module.exports = function(obj){
-var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
-with(obj||{}){
-__p+='<td>'+
-((__t=( name ))==null?'':__t)+
-'</td> ';
- if (status === 'New') { 
-__p+=' <td><p class="badge">New</p></td> ';
- } else if (status === 'Enqueued') { 
-__p+=' <td><p class="badge warning">Enqueued</p></td> ';
- } else if (status === 'Done') { 
-__p+=' <td><p class="badge ok">Done</p> <p class="message">'+
-((__t=( message ))==null?'':__t)+
-'</p></td> ';
- } else if (status === 'Error') { 
-__p+=' <td><p class="badge danger">Error</p> <p class="message">'+
-((__t=( message ))==null?'':__t)+
-'</p></td> ';
- } 
-__p+='';
-}
-return __p;
-};
-
-},{}],27:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
+arguments[4][8][0].apply(exports,arguments)
+},{"dup":8}],35:[function(require,module,exports){
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
@@ -1344,7 +1704,7 @@ __p+='<div class="smaller form"> <div class="row"> <div class="columns"> <div cl
 return __p;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var Input, Layout, Table, TableRow,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -1464,4 +1824,4 @@ module.exports.TableRow = TableRow;
 module.exports.Table = Table;
 
 
-},{"./templates/input":24,"./templates/layout":25,"./templates/table":27,"./templates/table-row":26}]},{},[2]);
+},{"./templates/input":32,"./templates/layout":33,"./templates/table":35,"./templates/table-row":34}]},{},[2]);
