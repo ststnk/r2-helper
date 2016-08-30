@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name":    "R2-D2 Helper",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "icons":   {
     "128": "artoo.png"
   },
@@ -12,10 +12,21 @@
       "matches":  ["https://ap.www.namecheap.com/*"],
       "js":       ["dependencies.min.js", "contentscript.js"],
       "css":      ["styles.css"]
+    }, {
+      "matches":    ["https://*.namecheap.com/*"],
+      "js":         ["dependencies.min.js", "admin-content.js"],
+      "all_frames": true,
+      "css":      ["admin-styles.css"]
     }
   ],
 
+  "background": {
+    "scripts":    ["background.js"],
+    "persistent": false
+  },
+
   "permissions": [
-    "declarativeContent"
+    "declarativeContent",
+    "tabs"
   ]
 }

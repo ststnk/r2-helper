@@ -1,0 +1,5 @@
+#r2-helper-content .container {
+  border: 1px solid rgb(230, 230, 230);
+  margin: 0.5rem 0;
+  padding: 1rem;
+}

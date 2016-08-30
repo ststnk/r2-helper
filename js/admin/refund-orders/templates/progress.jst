@@ -1,0 +1,9 @@
+<div class='container'>
+  <p>
+    Fetching orders info: <%= pulledCount() %> out of <%= _.size(items) %> in total...
+
+    <% if (pulledCount() === _.size(items)) { %>
+      <button id='r2-export-refund-orders'>Export orders</button>
+    <%}%>
+  </p>
+</div>

@@ -50,6 +50,9 @@ Allows managing auto-renew for domains and WhoisGuard subscriptions in bulk.
 
 ### Changelog
 
+##### v1.2.0
+* Added: 'Refund orders' page parser
+
 ##### v1.1.0
 * Added: Auto-Renew feature
 
