@@ -11,6 +11,8 @@ class RefundOrders extends Marionette.Object
     @region = new Region
     @orders = new Entities.RefundedOrdersCollection
 
+    window.orders = @orders
+
     contentView = new Views.Content
 
     @listenTo contentView, 'parse:clicked', =>

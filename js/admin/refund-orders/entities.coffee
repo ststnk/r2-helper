@@ -62,8 +62,9 @@ class RefundedOrdersCollection extends Backbone.Collection
 
     data = _.map data, (row) ->
       _.map row, (val, key) ->
-        val = val.join("\n")         if _.isArray(val)
-        val = '"' + val.trim() + '"' if _.isString(val) and val.match(/,|\n|"/)
+        val = val.join("\n")          if _.isArray(val)
+        val = '"' + val.trim() + '"'  if _.isString(val) and val.match(/,|\n|"/)
+        val = val.replace('#', '')    if _.isString(val)
         val
 
     csvContent = "data:text/csv;charset=utf-8,"
