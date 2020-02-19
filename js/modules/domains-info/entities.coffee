@@ -124,10 +124,10 @@ class DomainNamesCollection extends Backbone.Collection
         model.get(key) or '-'
   
     data = [attributes].concat(rows)
-	      
+
     data = _.map data, (row) ->
       _.map row, (val, key) ->
-        val = (_.map val, (value, key) -> "#{key}: #{value}") if _.isObject(val)
+        val = (_.map val, (value, key) -> "#{key}: #{value}") if _.isObject(val) and not _.isArray(val)
         val = val.join("\n")                                  if _.isArray(val)
         val = '"' + val.trim() + '"'                          if _.isString(val) and val.match(/,|\n|"/)
         val
@@ -138,7 +138,7 @@ class DomainNamesCollection extends Backbone.Collection
       dataString = infoArray.join ","
       csvContent += (if index < data.length then dataString + "\n" else dataString)
 	
-    encodedUri = encodeURI csvContent
+    encodedUri = encodeURI csvContent.replace(/#/g, '')
     link = document.createElement 'a'
     link.setAttribute 'href', encodedUri
     link.setAttribute 'download', downloadName + '.csv'

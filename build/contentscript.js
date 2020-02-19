@@ -759,7 +759,7 @@ DomainNamesCollection = (function(superClass) {
     data = [attributes].concat(rows);
     data = _.map(data, function(row) {
       return _.map(row, function(val, key) {
-        if (_.isObject(val)) {
+        if (_.isObject(val) && !_.isArray(val)) {
           val = _.map(val, function(value, key) {
             return key + ": " + value;
           });
@@ -779,7 +779,7 @@ DomainNamesCollection = (function(superClass) {
       dataString = infoArray.join(",");
       return csvContent += (index < data.length ? dataString + "\n" : dataString);
     });
-    encodedUri = encodeURI(csvContent);
+    encodedUri = encodeURI(csvContent.replace(/#/g, ''));
     link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', downloadName + '.csv');
