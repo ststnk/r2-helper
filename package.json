@@ -14,7 +14,7 @@
   "devDependencies": {
     "browserify": "^13.0.0",
     "coffeeify": "^2.0.1",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-concat": "^2.6.0",
     "gulp-declare": "^0.3.0",
     "gulp-define-module": "^0.1.4",
